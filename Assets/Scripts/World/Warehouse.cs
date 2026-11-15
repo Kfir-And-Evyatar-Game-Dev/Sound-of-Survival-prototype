@@ -30,15 +30,15 @@ public sealed class Warehouse : MonoBehaviour
         square = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 1, 1),
             new Vector2(.5f, .5f), 1);
         for (int y = 0; y < Height; y++)
-        for (int x = 0; x < Width; x++)
-        {
-            var cell = new Vector2Int(x, y);
-            char tile = Layout[y][x];
-            var visual = CreateVisual(tile == '#' ? "Wall" : "Floor", World(cell), .98f, 0);
-            tiles.Add(cell, visual);
-            if (tile == '#') visual.gameObject.AddComponent<BoxCollider2D>().size = Vector2.one / .98f;
-            else if (tile != '.') markers.Add(tile, cell);
-        }
+            for (int x = 0; x < Width; x++)
+            {
+                var cell = new Vector2Int(x, y);
+                char tile = Layout[y][x];
+                var visual = CreateVisual(tile == '#' ? "Wall" : "Floor", World(cell), .98f, 0);
+                tiles.Add(cell, visual);
+                if (tile == '#') visual.gameObject.AddComponent<BoxCollider2D>().size = Vector2.one / .98f;
+                else if (tile != '.') markers.Add(tile, cell);
+            }
     }
 
     public Vector2Int Marker(char symbol) => markers[symbol];
