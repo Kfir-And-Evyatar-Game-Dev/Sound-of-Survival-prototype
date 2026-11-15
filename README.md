@@ -1,55 +1,42 @@
-# Sound of Survival | The Dark Warehouse
+# רעש שמציל | Sound of Survival
 
-Assignment 4 prototype. Open this folder in Unity 6000.3.27f1, open
-Assets/Scenes/Warehouse.unity and press Play. Focus the Game view.
+אב־טיפוס למטלה 4. במחסן חשוך, גלי קול חושפים את הדרך לזמן קצר ומושכים את היצור לעבר מקור הרעש. כדי לנצח, אספו את הנתיך הצהוב ופתחו את יציאת החירום הסגולה. מגע עם היצור האדום מסיים את הניסיון בהפסד.
 
-- WASD or arrows: move.
-- Space: short echo. Shift + Space: stronger echo with a greater hearing range.
-- E: collect the fuse or open the exit when nearby.
-- Find the yellow fuse, then unlock the purple exit. Red is the hunter.
-- The hunter patrols and investigates noise. Touching it ends the attempt.
-- Use Play again after either result to restart.
+## הרצה ומקשים
 
-## Architecture
+פתחו את תיקיית הפרויקט ב־Unity בגרסה 6000.3.27f1. פתחו את הסצנה `Assets/Scenes/Warehouse.unity`, לחצו על **Play** ואז לחצו בתוך חלון **Game**.
+
+- **WASD או מקשי החצים** לתנועה.
+- **רווח** שולח הד קצר. **Shift + רווח** שולח הד חזק שחושף שטח גדול יותר ונשמע מרחוק יותר.
+- **E** אוסף את הנתיך או פותח את היציאה כשעומדים לידה.
+- **Play again** מתחיל ניסיון חדש אחרי ניצחון או הפסד.
+
+## מבנה הקוד
 
 ```mermaid
 classDiagram
-    WarehouseRound --> Warehouse : builds map and reads markers
-    WarehouseRound --> Survivor : controls round participation
-    WarehouseRound --> EchoHunter : controls round participation
-    Survivor --> EchoPulse : emits echo
+    WarehouseRound --> Warehouse : בניית המפה וקריאת סימונים
+    WarehouseRound --> Survivor : ניהול השתתפות השחקן
+    WarehouseRound --> EchoHunter : ניהול השתתפות היצור
+    Survivor --> EchoPulse : הפעלת הד
     EchoPulse ..> EchoHunter : Heard
-    EchoHunter --> Warehouse : requests open routes
-    Survivor ..> WarehouseRound : Interact and Caught
-    WarehouseRound ..> WarehouseHud : StatusChanged and Finished
+    EchoHunter --> Warehouse : חיפוש מסלול פתוח
+    Survivor ..> WarehouseRound : Interact, Caught
+    WarehouseRound ..> WarehouseHud : StatusChanged, Finished
 ```
 
-- EchoPulse broadcasts the position and hearing range. A direct call to one
-  hunter would bind the echo system to that enemy. An event lets multiple
-  listeners respond independently.
-- Warehouse owns the tile layout and shortest-path search. Moving directly
-  toward the sound would cross walls. Keeping routing in the map lets the
-  hunter focus on patrol, investigation and search.
-- WarehouseHud listens to round events. Calling the HUD directly from game
-  rules would make those rules depend on how the game is presented.
+- `EchoPulse` משדר את מיקום ההד ואת טווח השמיעה דרך האירוע `Heard`. בחרנו באירוע כדי שכמה אויבים יוכלו להגיב באופן עצמאי. קריאה ישירה הייתה מקשרת את מנגנון ההד לאויב מסוים.
+- `Warehouse` מגדיר את המפה ומחשב את המסלול הקצר ביותר במעברים. תנועה ישירה למקור הקול עלולה לחצות קירות. חישוב המסלול במפה מאפשר ל־`EchoHunter` להתמקד בסיור ובחקירת רעשים.
+- `WarehouseHud` מאזין לאירועי הסיבוב ומציג הודעות ותוצאות. קריאה ישירה לממשק מתוך חוקי המשחק הייתה יוצרת תלות באופן ההצגה.
 
-To add a hunter variant, add an actor under Assets/Scripts/Actors and give
-it a map marker and spawn entry in Warehouse and WarehouseRound. To add a
-required item, add a marker in Warehouse and update the interaction and win
-rules in WarehouseRound. The HUD still receives status messages and results
-through the same events.
+כדי להוסיף סוג אויב, מוסיפים סקריפט ב־`Assets/Scripts/Actors`, מסמנים את מיקומו ב־`Warehouse` ומוסיפים את יצירתו ב־`WarehouseRound`. כדי להוסיף חפץ שנדרש לניצחון, מוסיפים סימון במפה ומעדכנים ב־`WarehouseRound` את כללי האיסוף והניצחון. הממשק מקבל את ההודעות ואת תוצאת המשחק דרך אותם אירועים.
 
-There is no gameplay singleton. The map's static readonly layout and
-neighbor offsets hold shared level data. The static Web build command is an
-editor entry point and holds no runtime state.
+מערך המפה וכיווני המעבר הם שדות `static readonly` כי הם נתוני שלב קבועים המשותפים לכל המופעים. פקודת בניית ה־Web היא נקודת כניסה סטטית לעורך Unity.
 
-The survivor uses Rigidbody2D for wall contact and uses Collision2D.contactCount
-and Collision2D.collider to identify physical contact with the hunter.
+## פיזיקה
 
-## Web build
+השחקן משתמש ב־`Rigidbody2D` לתנועה ולהתנגשות בקירות. בעת התנגשות, הקוד קורא את `Collision2D.contactCount` ואת `Collision2D.collider` כדי לזהות מגע עם היצור ולהציג מסך הפסד.
 
-Install Unity Web Build Support for the editor version above. Choose
-Build > Build Warehouse Web. Zip the contents of Builds/Web for an HTML5
-upload to itch.io. Mark the upload playable in the browser, include the
-controls above, and link the GitHub repository. Add the itch.io page link here
-after publication.
+## בניית גרסת דפדפן
+
+התקינו את **Web Build Support** לגרסת Unity של הפרויקט ובחרו **Build → Build Warehouse Web**. כווצו את תוכן התיקייה `Builds/Web` לקובץ ZIP והעלו אותו ל־itch.io כמשחק HTML5 שניתן לשחק בו בדפדפן. הוסיפו בעמוד המשחק את מקשי השליטה וקישור למאגר GitHub, ואחרי הפרסום הוסיפו כאן קישור לעמוד המשחק.
